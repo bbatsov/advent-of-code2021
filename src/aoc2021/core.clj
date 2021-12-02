@@ -9,7 +9,7 @@
 (defn read-numbers [file]
   (map read-string (read-lines file)))
 
-;; sonar sweep
+;; day1 - sonar sweep
 (defn aoc1 [input]
   (->> input
        (partition 2 1)
@@ -23,7 +23,7 @@
                    (map #(apply + %)))]
     (aoc1 input)))
 
-;; dive!
+;; day2 - dive!
 
 (def aoc3-input (read-lines "input2.txt"))
 
