@@ -130,3 +130,76 @@
   (let [o2 (bin-to-dec (o2-rating input 0))
         co2 (bin-to-dec (co2-rating input 0))]
     (* o2 co2)))
+
+;; day4 - bingo
+
+(def day4-test-numbers [7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,19,3,26,1])
+
+(def day4-test-boards
+  "22 13 17 11  0
+ 8  2 23  4 24
+21  9 14 16  7
+ 6 10  3 18  5
+ 1 12 20 15 19
+
+ 3 15  0  2 22
+ 9 18 13 17  5
+19  8  7 25 23
+20 11 10 24  4
+14 21 16 12  6
+
+14 21 17 24  4
+10 16 15  9 19
+18  8 23 26 20
+22 11 13  6  5
+ 2  0 12  3  7")
+
+(def day4-real-numbers [14,30,18,8,3,10,77,4,48,67,28,38,63,43,62,12,68,88,54,32,17,21,83,64,97,53,24,2,60,96,86,23,20,93,65,34,45,46,42,49,71,9,61,16,31,1,29,40,59,87,95,41,39,27,6,25,19,58,80,81,50,79,73,15,70,37,92,94,7,55,85,98,5,84,99,26,66,57,82,75,22,89,74,36,11,76,56,33,13,72,35,78,47,91,51,44,69,0,90,52])
+
+(def day4-real-boards (read-boards (slurp (io/resource "input4-boards.txt"))))
+
+(defn read-boards [input]
+  (->> (str/split-lines input)
+       (remove #(= % ""))
+       (map #(str/split % #"\s+"))
+       (map #(remove (fn [s] (= s "")) %))
+       (map (fn [line] (map read-string line)))
+       (partition 5)))
+
+(defn mark-line [num line]
+  (map #(if (= num %) :mark %) line))
+
+(defn mark-num [num board]
+  (->> board
+       (map #(mark-line num %))))
+
+(defn rotate-board [board]
+  (apply map vector board))
+
+(defn bingo? [line]
+  (every? #(= % :mark) line))
+
+(defn winner? [board]
+  (or (some bingo? board)
+      (some bingo? (rotate-board board))))
+
+(defn unmarked [board]
+  (filter #(not (= :mark %)) (flatten board)))
+
+;; aoc5
+(defn play [nums boards]
+  (let [num (or (first nums) -1)
+        boards (map #(mark-num num %) boards)]
+      (cond
+        (not nums) nil
+        (some winner? boards) (* num (apply + (unmarked (first (filter winner? boards)))))
+        :else (play (next nums) boards))))
+
+(defn aoc6 [nums prev boards winners]
+  (let [num (or (first nums) -1)
+        winners (concat winners (filter winner? boards))
+        boards (map #(mark-num num %) (filter (complement winner?) boards))]
+      (cond
+        (empty? nums) (* prev (apply + (unmarked (last winners))))
+        (empty? boards) (* prev (apply + (unmarked (last winners))))
+        :else (play6 (next nums) num boards winners))))
